@@ -1,7 +1,7 @@
 # The RISC Zero STARK Protocol
 
 _The implementation in code for the RISC Zero STARK prover can be seen [here](https://github.com/risc0/risc0/blob/v0.18.0/risc0/zkp/src/prove/prover.rs).
-In this document, we present an overview to the RISC Zero STARK protocol, as well as a sequence diagram and a detailed description below. The [STARK by Hand](stark-by-hand.md) explainer and the [RISC Zero ZKP Whitepaper][ZKP Whitepaper] are good companions to this document._
+In this document, we present an overview of the RISC Zero STARK protocol, as well as a sequence diagram and a detailed description below. The [STARK by Hand](stark-by-hand.md) explainer and the [RISC Zero ZKP Whitepaper][ZKP Whitepaper] are good companions to this document._
 
 ## Overview
 
@@ -24,15 +24,15 @@ These public parameters include the number and length of the trace columns, the 
 #### Part 2: Program Setup
 
 This phase establishes an [Image ID], which is determined transparently from a RISC-V binary file and the circuit parameters.
-The [Image ID] is constructed by loading the RISC-V binary file into the zkVM memory, and then recording a Merkle snapshot of the full machine state.
-This setup can be repeated by anyone with access to the binary file, in order to confirm the correctness of the [Image ID].
+The [Image ID] is constructed by loading the RISC-V binary file into the zkVM memory and then recording a Merkle snapshot of the full machine state.
+This setup can be repeated by anyone with access to the binary file, to confirm the correctness of the [Image ID].
 
 ### Main Trace & Auxiliary Trace
 
 After the setup phase, the Prover executes the binary in the zkVM, computes a Low-Degree Extension on each column, and commits the _Extended Main Execution Trace_.
 Then, the prover computes and commits the _Extended Auxiliary Execution Trace_ which depends on verifier randomness.
 
-Compared to [ethSTARK], our protocol adds an additional round of interaction to support constraints beyond basic AIR constraints.
+Compared to [ethSTARK], our protocol adds a round of interaction to support constraints beyond basic AIR constraints.
 Using constraints that may span both the main trace and the auxiliary trace, we proceed with [DEEP-ALI & FRI] as described in [ethSTARK].
 Adding an Auxiliary Execution Trace enables various enhancements, relative to a Vanilla STARK protocol.
 These enhancements are described well in [From AIRs to RAPs].
@@ -50,13 +50,13 @@ We use this Auxiliary Execution Trace to support:
    Here, the tables and the witness are committed in the main trace, and grand product accumulators are committed in the auxiliary trace.
 
 1. A big integer accelerator to enable [fast cryptographic operations][acceleration]<br/>
-   The bigint accelerator implements multiplication of `a` and `b` by asking the host to provide the product `c` as non-deterministic advice. Then, the verifier provides randomness `r`, and the constraints enforce that when `a`, `b`, and `c` are interpreted as polynomials, `a(r) * b(r) == c(r)`. <br/>
+   The bigint accelerator implements the multiplication of `a` and `b` by asking the host to provide the product `c` as non-deterministic advice. Then, the verifier provides randomness `r`, and the constraints enforce that when `a`, `b`, and `c` are interpreted as polynomials, `a(r) * b(r) == c(r)`. <br/>
    Here, `a`, `b`, and `c` are committed in the main trace, and the evaluations at `r` are committed in the auxiliary trace.
 
 ### DEEP-ALI & FRI
 
-The rest of the protocol implements with [DEEP-ALI & FRI] as described in [EthSTARK].
-We describe this in more detail below, and refer readers to the [ZKP Whitepaper] for a more formal description of the protocol.
+The rest of the protocol is implemented with [DEEP-ALI & FRI] as described in [EthSTARK].
+We describe this in more detail below and refer readers to the [ZKP Whitepaper] for a more formal description of the protocol.
 
 ## Sequence Diagram
 
@@ -97,25 +97,25 @@ For a more formal articulation of the protocol, refer to the [ZKP Whitepaper].
 
 ### Extended Main Execution Trace
 
-- The Prover runs a computation in order to generate an [`Execution Trace`](./what_is_a_trace.md).
+- The Prover runs a computation to generate an [`Execution Trace`](./what_is_a_trace.md).
   - The `trace` is organized into `columns`, and the columns are categorized as `control columns`, `data columns`, and `auxiliary/accum columns`.
     - The `control columns` handle system initialization and shutdown, the initial program code to load into memory before execution, and other control signals that don't depend on the program execution.
     - The `data columns` contain the input and the computation data, both of which are private. These columns are committed in two orderings:
       - in order of program execution, and
       - re-ordered by register first and clock cycle second. The re-ordered columns allow for efficient validation of RISC-V memory operations.
     - The `auxiliary/accum columns` are used for a permutation argument, a lookup argument, and a big integer accelerator circuit.
-  - After computing the `data columns` and `auxiliary/accum columns,` the Prover adds some random `noise` to the end of those columns in order to ensure that the protocol is zero-knowledge.
+  - After computing the `data columns` and `auxiliary/accum columns,` the Prover adds some random `noise` to the end of those columns to ensure that the protocol is zero-knowledge.
 - The Prover encodes the `trace` as follows:
   - The Prover converts each `column` into a polynomial using an `iNTT`. We'll refer to these as `Trace Polynomials`, denoted $P_i(x)$.
-  - The Prover evaluates the `data polynomials` and the `control polynomials` over an expanded domain. The evaluations of the `data polynomials` and the `control polynomials` over this larger domain is called the `Extended Main Execution Trace`.
+  - The Prover evaluates the `data polynomials` and the `control polynomials` over an expanded domain. The evaluations of the `data polynomials` and the `control polynomials` over this larger domain are called the `Extended Main Execution Trace`.
   - The Prover commits the `Extended Main Execution Trace` into two separate Merkle Trees, sending the roots to the Verifier.
 
 ### Extended Auxiliary Execution Trace
 
-- Using the transcript-thus-far as an entropy-source, we choose some random extension field elements, using a SHA-2 CRNG.
+- Using the transcript-thus-far as an entropy source, we choose some random extension field elements, using a SHA-2 CRNG.
 - Then, the Prover uses the randomness to generate the `auxiliary/accum columns`. The Prover computes the Low-Degree Extension of the auxiliary columns to form the Extended Auxiliary Execution Trace.
 - The Prover commits the Extended Auxiliary Execution Trace to a Merkle tree and sends the Merkle root to the Verifier.
-- Using the transcript-thus-far as an entropy-source, we choose a random `constraint mixing parameter` $\alpha$, using a SHA-2 CRNG.
+- Using the transcript-thus-far as an entropy source, we choose a random `constraint mixing parameter` $\alpha$, using an SHA-2 CRNG.
 
 ### DEEP-ALI (part 1)
 
@@ -127,7 +127,7 @@ For a more formal articulation of the protocol, refer to the [ZKP Whitepaper].
     - Note that if each $C_j$ returns 0 at some point $z$, then $C$ will also return 0 at $z$.
   - Using a publicly known `Zeros Polynomial`, the Prover computes the `High Degree Validity Polynomial`, $V(x)=\frac{C(x)}{Z(x)}$.
     - The `Zeros Polynomial` $Z(x)$ is a divisor of any honest construction of $C(x)$.
-      In other words, an honest prover will construct $V(x)$ to be a polynomial of lower degree than $C(x)$.
+      In other words, an honest prover will construct $V(x)$ to be a polynomial of a lower degree than $C(x)$.
       We call $V$ "high degree" relative to the Trace Polynomials, $P_i$.
   - The Prover `splits` the `High Degree Validity Polynomial` into 4 `Low Degree Validity Polynomials`, $v_0(x), v_1(x), ..., v_3$.
   - The Prover evaluates the `Low Degree Validity Polynomials`, encodes them in a Merkle Tree, and sends the Merkle root to the Verifier.
@@ -146,8 +146,8 @@ For a more formal articulation of the protocol, refer to the [ZKP Whitepaper].
 - The Prover constructs the DEEP polynomials using the `taps`:
   - Denoting the `taps` of $P_i$ at $z$ as $(x_1,P_i(x_1)),\ldots,(x_n,P_i(x_n))$, the Prover constructs the DEEP polynomial $P'_i(x)=\frac{P_i(x)-\overline{P_i}(x)}{(x-x_1)\ldots(x-x_n)}$ where $\overline{P_i}(x)$ is the polynomial formed by interpolating the taps of $P_i$. The Prover computes $P'_i$, runs an iNTT on the result, and sends the coefficients of $P'_i$ to the Verifier.
     Using this technique, the Prover constructs and sends a DEEP polynomial for each $P_i$ and each $v_i$.
-- At this point, the claim of trace validity has been reduced to the claim that each of the DEEP polynomials is actually a low-degree polynomial.
-  To conclude the proof, the Prover mixes the DEEP polynomials into the `FRI Polynomial` using a `DEEP mixing parameter` and use the FRI protocol to show that the `FRI Polynomial` is a low-degree polynomial.
+- At this point, the claim of trace validity has been reduced to the claim that each of the DEEP polynomials is a low-degree polynomial.
+  To conclude the proof, the Prover mixes the DEEP polynomials into the `FRI Polynomial` using a `DEEP mixing parameter` and uses the FRI protocol to show that the `FRI Polynomial` is a low-degree polynomial.
 
 ### The FRI Protocol
 
