@@ -40,7 +40,7 @@ A [zero knowledge proof][zk-proof] allows one party (the prover) to convince
 another party (the verifier) that something is true without revealing all the
 details.  In the case of RISC Zero, the prover can show they correctly executed
 some code (known to both parties), while only revealing to the verifier the
-output of the code, not any of its inputs or any state during execution.
+the output of the code, not any of its inputs or any state during execution.
 
 The code runs in a special virtual machine, called a *zkVM*.  The RISC Zero zkVM
 emulates a small [RISC-V] computer, allowing it to run arbitrary code in any
@@ -53,7 +53,7 @@ First, the code to be proven must be compiled from its implementation language
 into a *method*.  A method is represented by a RISC-V ELF file with a special
 entry point that runs the code of the method.  Additionally, one can compute for
 a given method its *image ID* which is a special type of cryptographic hash of
-the ELF file, and is required for verification.
+the ELF file and is required for verification.
 
 Next, the host program runs and proves the method inside the zkVM.  The logical
 RISC-V machine running inside the zkVM is called the *guest* and the prover
@@ -71,18 +71,18 @@ the *seal*.
 The verifier can then verify the receipt and examine the log. If any tampering
 was done to the journal or the seal, the receipt will fail to verify.
 Additionally, it is cryptographically infeasible to generate a valid receipt
-unless the output of the journal is the exactly correct output for some valid
+unless the output of the journal is the exact correct output for some valid
 execution of the method whose image ID matches the receipt. In summary, the
-receipt acts as a zero knowledge proof of correct execution.
+receipt acts as a zero-knowledge proof of correct execution.
 
-Because the protocol is zero knowledge, the verifier cannot infer anything about
+Because the protocol is zero-knowledge, the verifier cannot infer anything about
 the details of the execution or any data passed between the host and the guest
 (aside from what is implied by the data written to the journal and the correct
 execution of the code).
 
 ## Security
 
-This code is based on the well studied zk-STARK protocol, which has been proven
+This code is based on the well-studied zk-STARK protocol, which has been proven
 secure under the random oracle model, with the only assumption being the
 security of the cryptographic hash used.  Our implementation uses SHA-256 for
 that hash and targets 100 bits of security.
@@ -95,7 +95,7 @@ other manner of problems.  Caveat emptor.
 
 ## Getting Started
 
-To start your own project, you can use our `cargo risczero` tool to write the
+To start your project, you can use our `cargo risczero` tool to write the
 initial boilerplate and set up a standard directory structure.
 First, [install Rust][install-rust] if you don't already have it, then install
 the `cargo risczero` tool. We'll use `cargo binstall` to get `cargo-risczero`
@@ -106,7 +106,7 @@ cargo install cargo-binstall
 cargo binstall cargo-risczero
 ```
 
-Next we'll need to install the `risc0` toolchain with:
+Next, we'll need to install the `risc0` toolchain with:
 
 ```
 cargo risczero install
